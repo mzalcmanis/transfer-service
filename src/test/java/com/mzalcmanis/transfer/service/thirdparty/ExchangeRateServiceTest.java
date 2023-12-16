@@ -55,7 +55,6 @@ class ExchangeRateServiceTest {
                         )
                 );
         Map<String, BigDecimal> rates = service.getRates();
-        log.info(rates.toString());
         service.getRates();
         service.getRates();
         Mockito.verify(exchangeRateRestTemplate, times(1)).getForEntity(Mockito.any(String.class), Mockito.eq(ExchangeRateService.Response.class));

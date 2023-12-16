@@ -1,19 +1,23 @@
 package com.mzalcmanis.transfer.controller;
 
 import com.mzalcmanis.transfer.api.TransactionRequest;
+import com.mzalcmanis.transfer.db.entity.AccountEntity;
 import com.mzalcmanis.transfer.db.repo.TransactionRepository;
 import com.mzalcmanis.transfer.dto.Account;
 import com.mzalcmanis.transfer.dto.Transaction;
+import com.mzalcmanis.transfer.service.thirdparty.ExchangeRateException;
 import io.restassured.common.mapper.TypeRef;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
 import java.math.BigDecimal;
+import java.util.Currency;
 import java.util.List;
 import java.util.UUID;
 
@@ -83,26 +87,40 @@ class TransactionControllerTest extends RestControllerTest {
     void createTransaction_insufficientFunds(){
         createTransaction(accUsd.getId(), new TransactionRequest(accClient2Usd.getId(), USD, accClient2Usd.getBalance().add(new BigDecimal("0.01"))))
                 .then().statusCode(HttpStatus.BAD_REQUEST.value())
+                //Note: normally we would check for some domain-specific error code define in API docs
+                //this is just to show the idea, thus, for the rest of the error tests we don't use such unstable approach
                 .body("detail", Matchers.containsStringIgnoringCase("insufficient"));
     }
 
     @Test
     void createTransaction_accountNotFound(){
         createTransaction(UUID.randomUUID(), new TransactionRequest(accClient2Usd.getId(), USD, new BigDecimal(50)))
-                .then().statusCode(HttpStatus.NOT_FOUND.value())
-                .body("detail", Matchers.containsStringIgnoringCase("account not found"));
+                .then().statusCode(HttpStatus.NOT_FOUND.value());
 
 
         createTransaction(accUsd.getId(), new TransactionRequest(UUID.randomUUID(), USD, new BigDecimal(50)))
-                .then().statusCode(HttpStatus.NOT_FOUND.value())
-                .body("detail", Matchers.containsStringIgnoringCase("account not found"));
+                .then().statusCode(HttpStatus.NOT_FOUND.value());
     }
 
     @Test
     void createTransaction_wrongCurrency(){
         createTransaction(accUsd.getId(), new TransactionRequest(accClient2Usd.getId(), EUR, BigDecimal.ONE))
-                .then().statusCode(HttpStatus.BAD_REQUEST.value())
-                .body("detail", Matchers.containsStringIgnoringCase("currency"));
+                .then().statusCode(HttpStatus.BAD_REQUEST.value());
+    }
+
+    @Test
+    void createTransaction_exchangeRateFetchFailure() {
+        Mockito.when(exchangeRateService.getRates())
+                .thenThrow(new ExchangeRateException("Foo exception"));
+        createTransaction(accEur.getId(), new TransactionRequest(accClient2Usd.getId(), USD, BigDecimal.ONE))
+                .then().statusCode(HttpStatus.BAD_REQUEST.value());
+    }
+
+    @Test
+    void createTransaction_unsupportedCurrency(){
+        var accGbp = accountRepository.save(new AccountEntity(null, client.getId(), "IBAN0001", Currency.getInstance("GBP"), new BigDecimal(100)));
+        createTransaction(accGbp.getId(), new TransactionRequest(accClient2Usd.getId(), USD, BigDecimal.ONE))
+                .then().statusCode(HttpStatus.BAD_REQUEST.value());
     }
 
     @Test

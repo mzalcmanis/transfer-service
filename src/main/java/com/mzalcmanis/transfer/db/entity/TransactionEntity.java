@@ -21,9 +21,6 @@ import java.util.UUID;
 public class TransactionEntity {
 
     @Id
-    //TODO: remove
-//    @GeneratedValue(generator = "uuid")
-//    @GenericGenerator(name = "uuid", type = UuidGenerator.class)
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 

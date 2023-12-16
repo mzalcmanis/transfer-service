@@ -17,8 +17,6 @@ import java.util.UUID;
 public class ClientEntity {
 
     @Id
-//    @GeneratedValue(generator = "uuid")
-//    @GenericGenerator(name = "uuid", type = UuidGenerator.class)
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 

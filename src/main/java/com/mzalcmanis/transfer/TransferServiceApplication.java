@@ -10,5 +10,4 @@ public class TransferServiceApplication {
 		SpringApplication.run(TransferServiceApplication.class, args);
 	}
 
-	//TODO: PostConstruct that fills the db
 }

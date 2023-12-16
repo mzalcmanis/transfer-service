@@ -42,6 +42,7 @@ public class CurrencyServiceImpl implements CurrencyService {
             return ApiResult.ofError(HttpStatus.BAD_REQUEST, "No exchange rate found for " + destCurrency);
         }
 
+        //all rates are with respect to USD, thus to get EUR/NOK one needs to use both USD/EUR and USD/NOK
         BigDecimal convertedAmount = amount.divide(sourceRate, MC_5DEC)
                 .multiply(destRate, MC_5DEC)
                 .round(MC_2DEC);

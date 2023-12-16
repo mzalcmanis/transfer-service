@@ -20,7 +20,6 @@ class ExchangeRateServiceSandboxTest {
     @Test
     void getRates() {
         Map<String, BigDecimal> rates = service.getRates();
-        log.info(rates.toString());
-//        System.out.println(service.getRates());
+//        log.info(rates.toString());
     }
 }

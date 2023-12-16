@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TransactionServiceImpl implements TransactionService {
 
-    //TODO: remove unused
     private final AccountRepository accountRepository;
 
     private final TransactionRepository transactionRepository;
