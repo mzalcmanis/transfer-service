@@ -19,19 +19,14 @@ public class AccountController {
 
     private final AccountService accountService;
 
+    //TODO:
     @GetMapping("/clients/{clientId}/accounts")
     public ResponseEntity<List<Account>> getAccounts(
             //we rely on receiving a valid UUID string, to handle malformed params
             // one would use RequestBodyAdvice or OncePerRequestFilter
             @PathVariable("clientId") UUID clientId
     ){
-        //The check be done within the getClientAccounts and use some response wrapper
-        if(!accountService.clientExists(clientId)){
-            //For simplicity reuse the library DTO, normally we would also return some
-            // Error response dto with business error code and a localized message
-            return ResponseEntity.of(ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Client Not found")).build();
-        }
-        return ResponseEntity.ok(accountService.getClientAccounts(clientId));
+        return accountService.getClientAccounts(clientId).toResponseEntity();
     }
 
 }

@@ -133,12 +133,12 @@ class TransactionControllerTest extends RestControllerTest {
     private Response createTransaction(UUID senderAccountId, TransactionRequest txRequest) {
         return given().contentType(ContentType.JSON)
                 .body(txRequest)
-                .when().post("/accounts/{accountId}/transactions", senderAccountId);
+                .when().post("/client/me/accounts/{accountId}/transactions", senderAccountId);
     }
 
     private List<Transaction> getTransactions(UUID accountId) {
         return given().contentType(ContentType.JSON)
-                .when().get("/accounts/{accountId}/transactions", accountId)
+                .when().get("/client/me/accounts/{accountId}/transactions", accountId)
                 .then().statusCode(HttpStatus.OK.value())
                 .extract().as(new TypeRef<List<Transaction>>() {
                 });
@@ -146,7 +146,7 @@ class TransactionControllerTest extends RestControllerTest {
 
     private List<Transaction> getTransactions(UUID accountId, int pageSize, int page) {
         return given().contentType(ContentType.JSON)
-                .when().get("/accounts/{accountId}/transactions?page={page}&size={size}", accountId, page, pageSize)
+                .when().get("/client/me/accounts/{accountId}/transactions?page={page}&size={size}", accountId, page, pageSize)
                 .then().statusCode(HttpStatus.OK.value())
                 .extract().as(new TypeRef<List<Transaction>>() {
                 });

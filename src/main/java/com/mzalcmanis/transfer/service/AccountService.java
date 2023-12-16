@@ -1,5 +1,6 @@
 package com.mzalcmanis.transfer.service;
 
+import com.mzalcmanis.transfer.api.ApiResult;
 import com.mzalcmanis.transfer.db.entity.AccountEntity;
 import com.mzalcmanis.transfer.db.entity.TransactionEntity;
 import com.mzalcmanis.transfer.db.repo.AccountRepository;
@@ -9,6 +10,7 @@ import com.mzalcmanis.transfer.dto.Account;
 import com.mzalcmanis.transfer.dto.Transaction;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,18 +28,15 @@ public class AccountService {
 
     private final DtoMapper dtoMapper;
 
-    public List<Account> getClientAccounts(UUID clientId) {
-        return accountRepository.findByClientId(clientId)
+    public ApiResult<List<Account>> getClientAccounts(UUID clientId) {
+        if(!clientRepository.existsById(clientId)){
+            return ApiResult.ofError(HttpStatus.NOT_FOUND, "client not found");
+        }
+        List<Account> accountList = accountRepository.findByClientId(clientId)
                 .stream()
                 .map(dtoMapper::map)
                 .collect(Collectors.toList());
+        return ApiResult.ofSuccess(accountList);
     }
 
-    public boolean clientExists(UUID clientId) {
-        return clientRepository.existsById(clientId);
-    }
-
-    public boolean accountExists(UUID accountId) {
-        return accountRepository.existsById(accountId);
-    }
 }
