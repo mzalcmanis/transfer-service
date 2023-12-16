@@ -1,4 +1,4 @@
-package com.mzalcmanis.transfer.service;
+package com.mzalcmanis.transfer.service.impl;
 
 import com.mzalcmanis.transfer.db.entity.AccountEntity;
 import com.mzalcmanis.transfer.db.entity.TransactionEntity;

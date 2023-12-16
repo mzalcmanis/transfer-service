@@ -1,9 +1,6 @@
 package com.mzalcmanis.transfer.service.thirdparty;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,14 +16,13 @@ import java.util.Map;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ExchangeRateService {
+
+    private final RestTemplate exchangeRateRestTemplate;
 
     @Value("${exchange-rate-service.url}")
     private String url;
-
-    //TODO: see if @Value will work with @RequiredArgsConstructor
-    @Autowired
-    private RestTemplate exchangeRateRestTemplate;
 
     @Cacheable("rates")
     public Map<String, BigDecimal> getRates(){
