@@ -28,7 +28,6 @@ public class ExchangeRateService {
     @Autowired
     private RestTemplate exchangeRateRestTemplate;
 
-    //TODO: optional or result
     @Cacheable("rates")
     public Map<String, BigDecimal> getRates(){
         try {
@@ -38,10 +37,10 @@ public class ExchangeRateService {
         } catch (RestClientResponseException e) {
             String errorBody = e.getResponseBodyAsString();
             log.error("Rate API call error: " + errorBody, e);
-            return null;
+            throw new ExchangeRateException("Failed fetching exchange rates from third-party service");
         } catch (RestClientException e) {
             log.error("Rate API error", e);
-            return null;
+            throw new ExchangeRateException("Failed fetching exchange rates from third-party service");
         }
     }
 

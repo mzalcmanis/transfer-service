@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 
@@ -64,15 +65,13 @@ class ExchangeRateServiceTest {
     void getRates_exception() {
         Mockito.when(exchangeRateRestTemplate.getForEntity(Mockito.any(String.class), Mockito.eq(ExchangeRateService.Response.class)))
                 .thenThrow(new RestClientException("Foo exception"));
-        Map<String, BigDecimal> rates = service.getRates();
-        assertThat(rates).isNull();
+        assertThrows(ExchangeRateException.class, () -> service.getRates());
     }
 
     @Test
     void getRates_exceptionWithResponseBody() {
         Mockito.when(exchangeRateRestTemplate.getForEntity(Mockito.any(String.class), Mockito.eq(ExchangeRateService.Response.class)))
                 .thenThrow(new RestClientResponseException("Foo exception", HttpStatus.BAD_REQUEST, "Status text", null, "response body".getBytes(), null));
-        Map<String, BigDecimal> rates = service.getRates();
-        assertThat(rates).isNull();
+        assertThrows(ExchangeRateException.class, () -> service.getRates());
     }
 }
