@@ -24,7 +24,6 @@ public class CurrencyServiceImpl implements CurrencyService {
 
     private final ExchangeRateService exchangeRateService;
 
-    //TODO: test different conversions
     @Override
     public ApiResult<BigDecimal> convert(BigDecimal amount, Currency sourceCurrency, Currency destCurrency) {
         if(sourceCurrency.equals(destCurrency)){

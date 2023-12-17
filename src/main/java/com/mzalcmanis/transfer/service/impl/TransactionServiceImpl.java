@@ -33,6 +33,11 @@ public class TransactionServiceImpl implements TransactionService {
 
     private final CurrencyService currencyService;
 
+    /**
+     * For simplicity the external service call is made from within @Transactional.
+     * Normally we would either make sure that the api response has been already
+     * made asynchronously and then cached, or we would split the method in two.
+     */
     @Override
     @Transactional
     public ApiResult<Void> createTransaction(TransactionRequest request, UUID senderAccountId) {
@@ -52,15 +57,15 @@ public class TransactionServiceImpl implements TransactionService {
                             receiverAcc.getCurrency(), request.getCurrency())
             );
         }
-        ApiResult<BigDecimal> conversrionResult = currencyService.convert(request.getAmount(), request.getCurrency(), senderAcc.getCurrency());
-        if (conversrionResult.isError()) {
-            return ApiResult.ofError(conversrionResult);
+        //Note the external service call within @Transactional scope
+        ApiResult<BigDecimal> conversionResult = currencyService.convert(request.getAmount(), request.getCurrency(), senderAcc.getCurrency());
+        if (conversionResult.isError()) {
+            return ApiResult.ofError(conversionResult);
         }
-        BigDecimal convertedAmount = conversrionResult.get();
+        BigDecimal convertedAmount = conversionResult.get();
         if (senderAcc.getBalance().compareTo(convertedAmount) < 0) {
             return ApiResult.ofError(HttpStatus.BAD_REQUEST, "Insufficient funds");
         }
-        //TODO: split here due to transaction?
         senderAcc.setBalance(senderAcc.getBalance().subtract(convertedAmount));
         //transaction and receiver accounts currency is always from the request by business requirement
         receiverAcc.setBalance(receiverAcc.getBalance().add(request.getAmount()));

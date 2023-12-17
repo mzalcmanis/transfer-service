@@ -1,10 +1,18 @@
 # Local run
 
-* Make sure to have Java 17 installed on your local machine.
+* Make sure to have Java 17 (or higher) installed on your local machine.
 * Open a command line app
 * Navigate to project root directory and run the following command:
 ```shell
 ./gradlew bootRun
+```
+To change the service port:
+```shell
+./gradlew bootRun --args='--server.port=8081'
+```
+In case of insufficient permissions on Linux run the following command:
+```shell
+chmod +x gradlew
 ```
 
 # Usage
@@ -64,7 +72,7 @@ curl "http://localhost:8080/client/me/accounts/efd2661d-96a9-460f-aa5a-9737a450c
 
 ### Error scenarios
 
-Here are a couple of error scenarios.
+Here are a couple of error scenarios (mind to replace ^ with \ when using Linux).
 
 Insufficient funds
 

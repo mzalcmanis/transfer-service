@@ -1,24 +1,21 @@
--- Create the Client table
 CREATE TABLE clients (
     id UUID PRIMARY KEY NOT NULL,
     first_name VARCHAR(255) NOT NULL,
     last_name VARCHAR(255) NOT NULL
 );
 
--- Create the Accounts table
 CREATE TABLE accounts (
     id UUID PRIMARY KEY NOT NULL,
     client_id UUID NOT NULL,
     account_number VARCHAR(34) NOT NULL, -- max iban length
     currency VARCHAR(3) NOT NULL,
-    balance DECIMAL(15, 2) DEFAULT 0.0 NOT NULL,
+    balance DECIMAL(15, 2) DEFAULT 0.0 NOT NULL CHECK(balance >= 0.0) ,
     FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE
 );
 
 CREATE INDEX  accounts_client_id_idx
   on accounts (client_id);
 
--- Create the Transactions table
 CREATE TABLE transactions (
     id UUID PRIMARY KEY NOT NULL,
     sender_account_id UUID NOT NULL,

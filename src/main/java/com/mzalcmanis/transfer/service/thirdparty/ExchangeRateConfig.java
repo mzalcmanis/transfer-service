@@ -23,9 +23,9 @@ public class ExchangeRateConfig {
         return new RestTemplate(factory);
     }
 
-    //TODO: expire policy
     @Bean
     public CacheManager cacheManager(){
+        //No expiry policy for the sake of simplicity
         return new ConcurrentMapCacheManager("rates");
     }
 }
