@@ -30,14 +30,14 @@ class TransactionControllerTest extends RestControllerTest {
     private TransactionRepository transactionRepository;
 
     @BeforeEach
-    void setUp(){
+    void setUp() {
         super.setUp();
         transactionRepository.deleteAll();
     }
 
     @Test
-    void createTransaction_ok(){
-        TransactionRequest txRequest = new TransactionRequest(accClient2Usd.getId(), USD, new BigDecimal(50));
+    void createTransaction_ok() {
+        TransactionRequest txRequest = new TransactionRequest(accClient2Usd.getId(), USD.getCurrencyCode(), new BigDecimal(50));
         createTransaction(accUsd.getId(), txRequest)
                 .then().statusCode(HttpStatus.OK.value());
 
@@ -47,7 +47,7 @@ class TransactionControllerTest extends RestControllerTest {
         Transaction txSender = transactions.get(0);
         //sender amount sees negative amount
         assertThat(txSender.getAmount()).isEqualByComparingTo(txRequest.getAmount().negate());
-        assertThat(txSender.getCurrency()).isEqualTo(txRequest.getCurrency());
+        assertThat(txSender.getCurrency().getCurrencyCode()).isEqualTo(txRequest.getCurrency());
 
         Account senderAccount = getAccount(client.getId(), accUsd.getId());
         assertThat(senderAccount.getBalance())
@@ -68,8 +68,8 @@ class TransactionControllerTest extends RestControllerTest {
     }
 
     @Test
-    void createTransaction_withCurrencyConversion_ok(){
-        TransactionRequest txRequest = new TransactionRequest(accClient2Nok.getId(), NOK, new BigDecimal(20));
+    void createTransaction_withCurrencyConversion_ok() {
+        TransactionRequest txRequest = new TransactionRequest(accClient2Nok.getId(), NOK.getCurrencyCode(), new BigDecimal(20));
         createTransaction(accEur.getId(), txRequest)
                 .then().statusCode(HttpStatus.OK.value());
 
@@ -79,13 +79,13 @@ class TransactionControllerTest extends RestControllerTest {
         Transaction txSender = transactions.get(0);
         //sender amount sees negative amount
         assertThat(txSender.getAmount()).isEqualByComparingTo(txRequest.getAmount().negate());
-        assertThat(txSender.getCurrency()).isEqualTo(txRequest.getCurrency());
+        assertThat(txSender.getCurrency().getCurrencyCode()).isEqualTo(txRequest.getCurrency());
 
     }
 
     @Test
-    void createTransaction_insufficientFunds(){
-        createTransaction(accUsd.getId(), new TransactionRequest(accClient2Usd.getId(), USD, accClient2Usd.getBalance().add(new BigDecimal("0.01"))))
+    void createTransaction_insufficientFunds() {
+        createTransaction(accUsd.getId(), new TransactionRequest(accClient2Usd.getId(), USD.getCurrencyCode(), accClient2Usd.getBalance().add(new BigDecimal("0.01"))))
                 .then().statusCode(HttpStatus.BAD_REQUEST.value())
                 //Note: normally we would check for some domain-specific error code define in API docs
                 //this is just to show the idea, thus, for the rest of the error tests we don't use such unstable approach
@@ -93,18 +93,18 @@ class TransactionControllerTest extends RestControllerTest {
     }
 
     @Test
-    void createTransaction_accountNotFound(){
-        createTransaction(UUID.randomUUID(), new TransactionRequest(accClient2Usd.getId(), USD, new BigDecimal(50)))
+    void createTransaction_accountNotFound() {
+        createTransaction(UUID.randomUUID(), new TransactionRequest(accClient2Usd.getId(), USD.getCurrencyCode(), new BigDecimal(50)))
                 .then().statusCode(HttpStatus.NOT_FOUND.value());
 
 
-        createTransaction(accUsd.getId(), new TransactionRequest(UUID.randomUUID(), USD, new BigDecimal(50)))
+        createTransaction(accUsd.getId(), new TransactionRequest(UUID.randomUUID(), USD.getCurrencyCode(), new BigDecimal(50)))
                 .then().statusCode(HttpStatus.NOT_FOUND.value());
     }
 
     @Test
-    void createTransaction_wrongCurrency(){
-        createTransaction(accUsd.getId(), new TransactionRequest(accClient2Usd.getId(), EUR, BigDecimal.ONE))
+    void createTransaction_wrongCurrency() {
+        createTransaction(accUsd.getId(), new TransactionRequest(accClient2Usd.getId(), EUR.getCurrencyCode(), BigDecimal.ONE))
                 .then().statusCode(HttpStatus.BAD_REQUEST.value());
     }
 
@@ -112,23 +112,23 @@ class TransactionControllerTest extends RestControllerTest {
     void createTransaction_exchangeRateFetchFailure() {
         Mockito.when(exchangeRateService.getRates())
                 .thenThrow(new ExchangeRateException("Foo exception"));
-        createTransaction(accEur.getId(), new TransactionRequest(accClient2Usd.getId(), USD, BigDecimal.ONE))
+        createTransaction(accEur.getId(), new TransactionRequest(accClient2Usd.getId(), USD.getCurrencyCode(), BigDecimal.ONE))
                 .then().statusCode(HttpStatus.BAD_REQUEST.value());
     }
 
     @Test
-    void createTransaction_unsupportedCurrency(){
+    void createTransaction_unsupportedCurrency() {
         var accGbp = accountRepository.save(new AccountEntity(null, client.getId(), "IBAN0001", Currency.getInstance("GBP"), new BigDecimal(100)));
-        createTransaction(accGbp.getId(), new TransactionRequest(accClient2Usd.getId(), USD, BigDecimal.ONE))
+        createTransaction(accGbp.getId(), new TransactionRequest(accClient2Usd.getId(), USD.getCurrencyCode(), BigDecimal.ONE))
                 .then().statusCode(HttpStatus.BAD_REQUEST.value());
     }
 
     @Test
-    void getTransactions_paging(){
+    void getTransactions_paging() {
         int pageSize = 5;
         //create 2 pages of transactions and not spend all the account's balance
         for (int i = 0; i < pageSize * 2; i++) {
-            createTransaction(accUsd.getId(), new TransactionRequest(accClient2Usd.getId(), USD, new BigDecimal(i + 1)))
+            createTransaction(accUsd.getId(), new TransactionRequest(accClient2Usd.getId(), USD.getCurrencyCode(), new BigDecimal(i + 1)))
                     .then().statusCode(HttpStatus.OK.value());
         }
         List<Transaction> transactions = getTransactions(accUsd.getId(), pageSize, 0);
@@ -170,7 +170,7 @@ class TransactionControllerTest extends RestControllerTest {
                 });
     }
 
-    private Account getAccount(UUID clientId, UUID accountId){
+    private Account getAccount(UUID clientId, UUID accountId) {
         List<Account> accounts = given().contentType(ContentType.JSON)
                 .when().get("/clients/{clientId}/accounts", clientId)
                 .then().statusCode(HttpStatus.OK.value())

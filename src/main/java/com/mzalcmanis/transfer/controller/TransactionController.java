@@ -3,14 +3,17 @@ package com.mzalcmanis.transfer.controller;
 import com.mzalcmanis.transfer.api.TransactionRequest;
 import com.mzalcmanis.transfer.dto.Transaction;
 import com.mzalcmanis.transfer.service.TransactionService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
 
+@Validated
 @RestController
 @RequiredArgsConstructor
 public class TransactionController {
@@ -28,7 +31,7 @@ public class TransactionController {
     @PostMapping("/client/me/accounts/{accountId}/transactions")
     public ResponseEntity<Void> createTransaction(
             @PathVariable("accountId") UUID senderAccountId,
-            @RequestBody TransactionRequest request
+            @Valid @RequestBody TransactionRequest request
     ){
         return transactionService.createTransaction(request, senderAccountId).toResponseEntity();
     }

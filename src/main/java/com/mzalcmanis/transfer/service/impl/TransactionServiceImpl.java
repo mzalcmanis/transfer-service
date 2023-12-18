@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Currency;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -51,14 +52,15 @@ public class TransactionServiceImpl implements TransactionService {
         }
         AccountEntity senderAcc = senderAccountOptional.get();
         AccountEntity receiverAcc = receiverAccountOptional.get();
-        if (!receiverAcc.getCurrency().equals(request.getCurrency())) {
+        Currency requestCurrency = Currency.getInstance(request.getCurrency());
+        if (!receiverAcc.getCurrency().equals(requestCurrency)) {
             return ApiResult.ofError(HttpStatus.BAD_REQUEST,
                     String.format("Receiver account currency %s does not match the transaction currency %s",
                             receiverAcc.getCurrency(), request.getCurrency())
             );
         }
         //Note the external service call within @Transactional scope
-        ApiResult<BigDecimal> conversionResult = currencyService.convert(request.getAmount(), request.getCurrency(), senderAcc.getCurrency());
+        ApiResult<BigDecimal> conversionResult = currencyService.convert(request.getAmount(), requestCurrency, senderAcc.getCurrency());
         if (conversionResult.isError()) {
             return ApiResult.ofError(conversionResult);
         }
@@ -73,7 +75,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .senderAccountId(senderAcc.getId())
                 .receiverAccountId(receiverAcc.getId())
                 .amount(request.getAmount())
-                .currency(request.getCurrency())
+                .currency(requestCurrency)
                 .createdDate(LocalDateTime.now())
                 .build();
         transactionRepository.save(transaction);
